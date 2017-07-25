@@ -1,0 +1,21 @@
+{
+  "name": "@bemoid/cli",
+  "version": "1.0.0",
+  "description": "Simple CLI for scaffolding front-end based on Bemoid CSS framework.",
+  "bin": {
+    "bemoid": "bin/bemoid",
+    "bemoid-init": "bin/bemoid-init"
+  },
+  "scripts": {
+
+  },
+  "keywords": [
+  	"bemoid",
+    "cli"
+  ],
+  "author": "Jędrzej Chałubek",
+  "license": "MIT",
+  "devDependencies": {
+
+  }
+}
