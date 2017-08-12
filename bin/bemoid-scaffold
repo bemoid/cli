@@ -1,0 +1,22 @@
+#!/usr/bin/env node
+
+const chalk = require('chalk')
+const program = require('commander')
+
+program
+  .usage('<template-name>')
+
+program.on('--help', function () {
+  console.log()
+  console.log('  Examples:')
+  console.log()
+  console.log(chalk.gray('    # Scaffold files based on SCSS boilerplate'))
+  console.log('    $ bemoid scaffold scss')
+  console.log()
+})
+
+function help () {
+  program.parse(process.argv)
+  if (program.args.length < 1) return program.help()
+}
+help()
