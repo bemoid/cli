@@ -1,7 +1,28 @@
 #!/usr/bin/env node
 
+const async = require('async');
+const Metalsmith = require('metalsmith')
+const Handlebars = require('handlebars')
+const prompt = require('cli-prompt')
+const exists = require('fs').existsSync
+const rm = require('rimraf').sync
+const render = require('consolidate').handlebars.render;
+const path = require('path')
 const chalk = require('chalk')
+const inquirer = require('inquirer')
+const home = require('user-home')
 const program = require('commander')
+const download = require('download-git-repo')
+const imports = require('@bemoid/bemoid/json/imports')
+const variables = require('@bemoid/bemoid/json/variables')
+
+Handlebars.registerHelper('uppercase', function(str) {
+  return str.charAt(0).toUpperCase() + str.slice(1)
+})
+
+Handlebars.registerHelper('add', function(a, b) {
+  return a + b;
+});
 
 program
   .usage('<template-name>')
@@ -10,7 +31,7 @@ program.on('--help', function () {
   console.log()
   console.log('  Examples:')
   console.log()
-  console.log(chalk.gray('    # Scaffold files based on SCSS boilerplate'))
+  console.log(chalk.gray('    # Scaffold boilerplate files based on SCSS syntax'))
   console.log('    $ bemoid scaffold scss')
   console.log()
 })
@@ -20,3 +41,50 @@ function help () {
   if (program.args.length < 1) return program.help()
 }
 help()
+
+var template = program.args[0]
+var rawName = program.args[1]
+var to = path.resolve(rawName || '.')
+var tmp = path.join(home, '.bemoid-templates', template.replace(/\//g, '-'))
+
+run()
+
+function run() {
+  download(`bemoid/scaffold-${template}`, tmp, function (err) {
+    if (err) throw err;
+
+    var metalsmith = Metalsmith(tmp)
+      .source('template')
+      .destination(to)
+      .use(templater)
+      .build(function(err){
+        if (err) throw err.message;
+      });
+  })
+}
+
+/**
+ * Template in place plugin.
+ *
+ * @param {Object} files
+ * @param {Metalsmith} metalsmith
+ * @param {Function} done
+ */
+function templater(files, metalsmith, done){
+  var keys = Object.keys(files);
+  var metadata = metalsmith.metadata();
+
+  metadata['imports'] = imports
+  metadata['variables'] = variables
+
+  async.each(keys, run, done);
+
+  function run(file, done){
+    var str = files[file].contents.toString();
+    render(str, metadata, function(err, res){
+      if (err) return done(err);
+      files[file].contents = new Buffer(res);
+      done();
+    });
+  }
+}
