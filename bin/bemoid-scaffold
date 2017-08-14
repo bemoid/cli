@@ -1,31 +1,17 @@
 #!/usr/bin/env node
 
-const async = require('async');
-const Metalsmith = require('metalsmith')
-const Handlebars = require('handlebars')
 const prompt = require('cli-prompt')
 const exists = require('fs').existsSync
 const rm = require('rimraf').sync
-const render = require('consolidate').handlebars.render;
 const path = require('path')
 const chalk = require('chalk')
 const inquirer = require('inquirer')
 const home = require('user-home')
 const program = require('commander')
-const download = require('download-git-repo')
-const imports = require('@bemoid/bemoid/json/imports')
-const variables = require('@bemoid/bemoid/json/variables')
 
-Handlebars.registerHelper('uppercase', function(str) {
-  return str.charAt(0).toUpperCase() + str.slice(1)
-})
+const generate = require('../lib/generate')
 
-Handlebars.registerHelper('add', function(a, b) {
-  return a + b;
-});
-
-program
-  .usage('<template-name>')
+program.usage('<template-name>')
 
 program.on('--help', function () {
   console.log()
@@ -50,41 +36,11 @@ var tmp = path.join(home, '.bemoid-templates', template.replace(/\//g, '-'))
 run()
 
 function run() {
-  download(`bemoid/scaffold-${template}`, tmp, function (err) {
-    if (err) throw err;
-
-    var metalsmith = Metalsmith(tmp)
-      .source('template')
-      .destination(to)
-      .use(templater)
-      .build(function(err){
-        if (err) throw err.message;
-      });
+  generate({
+    template: `bemoid/scaffold-${template}`,
+    from: tmp,
+    to: to
+  }, function (err) {
+    if (err) throw err.message;
   })
-}
-
-/**
- * Template in place plugin.
- *
- * @param {Object} files
- * @param {Metalsmith} metalsmith
- * @param {Function} done
- */
-function templater(files, metalsmith, done){
-  var keys = Object.keys(files);
-  var metadata = metalsmith.metadata();
-
-  metadata['imports'] = imports
-  metadata['variables'] = variables
-
-  async.each(keys, run, done);
-
-  function run(file, done){
-    var str = files[file].contents.toString();
-    render(str, metadata, function(err, res){
-      if (err) return done(err);
-      files[file].contents = new Buffer(res);
-      done();
-    });
-  }
 }
