@@ -49,12 +49,12 @@ help()
  */
 var boilerplate = program.args[0]
 var to = path.resolve(program.args[1] || '.')
-var store = store.templatePath(boilerplate)
+var temp = store.templatePath(boilerplate)
 var spinner = ora('Scaffolding the boilerplate ...')
 
 function generateBoilerplate() {
   generate({
-    boilerplate: store,
+    boilerplate: temp,
     to: to
   }, (err) => {
     if (err) throw err.message
@@ -67,7 +67,7 @@ function generateBoilerplate() {
 function downloadAndGenerateBoilerplate(name) {
   download({
     from: name,
-    to: store
+    to: temp
   }, (err) => {
     spinner.stop()
 
@@ -94,13 +94,13 @@ function runScaffolding() {
       }
     } else {
       console.log()
-      console.log(chalk.gray(`♫ Woops, you are offline. Working using cached boilerplate [${store}] files ...`))
+      console.log(chalk.gray(`♫ Woops, you are offline. Working using cached boilerplate [${temp}] files ...`))
 
-      if (exists(store)) {
+      if (exists(temp)) {
         generateBoilerplate()
       } else {
         spinner.stop()
-        console.log(chalk.yellow(`⚠ There is no cached files of choosen [${boilerplate}] boilerplate.`))
+        console.log(chalk.yellow(`⚠ There is no cached files for [${boilerplate}] boilerplate.`))
       }
     }
   })
