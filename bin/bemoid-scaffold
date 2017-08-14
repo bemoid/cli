@@ -91,7 +91,7 @@ function runScaffolding() {
       }
     } else {
       console.log()
-      console.log(chalk.gray(`> You are offline. Working using cached boilerplate files at ${store} ...`))
+      console.log(chalk.gray(`> You are offline. Working using cached boilerplate [${store}] files ...`))
 
       if (exists(store)) {
         generateBoilerplate()
@@ -107,7 +107,7 @@ if (exists(to)) {
   var questions = [{
     type: 'confirm',
     name: 'ok',
-    message: 'Target directory exists and will be overwritten. Continue?'
+    message: `Target directory [${to}] exists and will be overwritten. Continue?`
   }]
 
   inquirer
