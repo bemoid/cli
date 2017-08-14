@@ -6,17 +6,19 @@ var chalk = require('chalk')
 var rm = require('rimraf').sync
 var inquirer = require('inquirer')
 var program = require('commander')
+var online = require('is-online')
 var exists = require('fs').existsSync
 
 var store = require('../lib/store')
 var generate = require('../lib/generate')
+var download = require('../lib/download')
 
 /**
  * COMMAND REGISTRATION
  * ----------------------------------------------------------
  */
 program
-  .usage('<template-name>')
+  .usage('<boilerplate-name>')
   .on('--help', function () {
     console.log()
     console.log('  Examples:')
@@ -43,27 +45,61 @@ help()
 /**
  * COMMAND LOGIC
  * ----------------------------------------------------------
- * Generates and renders boilerplate from specified template.
+ * Generates and renders boilerplate from specified boilerplate.
  */
-var template = program.args[0]
+var boilerplate = program.args[0]
 var to = path.resolve(program.args[1] || '.')
-var tmp = store.templatePath(template)
+var store = store.templatePath(boilerplate)
+var spinner = ora('Scaffolding the boilerplate ...')
 
-function run() {
-  var spinner = ora('Scaffolding a template')
-
-  spinner.start()
-
+function generateBoilerplate() {
   generate({
-    template: `bemoid/scaffold-${template}`,
-    from: tmp,
+    boilerplate: store,
     to: to
   }, function (err) {
+    if (err) throw err.message
+
+    spinner.stop()
+    console.log(chalk.green(`✓ Boilerplate [${boilerplate}] sucessfully scaffolded.`))
+  })
+}
+
+function downloadAndGenerateBoilerplate(name) {
+  download({
+    from: name,
+    to: store
+  }, function (err) {
+    if (err) throw err.message
+
     spinner.stop()
 
-    if (err) throw err.message;
+    generateBoilerplate()
+  })
+}
 
-    console.log(chalk.green(`Template [${template}] sucessfully scaffolded`))
+function runScaffolding() {
+  spinner.start()
+
+  online().then((online) => {
+    if (online) {
+      let isExternal = (boilerplate.indexOf('/') > -1)
+
+      if (isExternal) {
+        downloadAndGenerateBoilerplate(boilerplate)
+      } else {
+        downloadAndGenerateBoilerplate(`bemoid/scaffold-${boilerplate}`)
+      }
+    } else {
+      console.log()
+      console.log(chalk.gray(`> You are offline. Working using cached boilerplate files at ${store} ...`))
+
+      if (exists(store)) {
+        generateBoilerplate()
+      } else {
+        spinner.stop()
+        console.log(chalk.yellow(`> There is no cached files of choosen [${boilerplate}] boilerplate.`))
+      }
+    }
   })
 }
 
@@ -78,9 +114,9 @@ if (exists(to)) {
     .prompt(questions)
     .then(function (answers) {
       if (answers.ok) {
-        run()
+        runScaffolding()
       }
     })
 } else {
-  run()
+  runScaffolding()
 }
