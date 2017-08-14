@@ -1,46 +1,86 @@
 #!/usr/bin/env node
 
-const prompt = require('cli-prompt')
-const exists = require('fs').existsSync
-const rm = require('rimraf').sync
-const path = require('path')
-const chalk = require('chalk')
-const inquirer = require('inquirer')
-const home = require('user-home')
-const program = require('commander')
+var ora = require('ora')
+var path = require('path')
+var chalk = require('chalk')
+var rm = require('rimraf').sync
+var inquirer = require('inquirer')
+var program = require('commander')
+var exists = require('fs').existsSync
 
-const generate = require('../lib/generate')
+var store = require('../lib/store')
+var generate = require('../lib/generate')
 
-program.usage('<template-name>')
+/**
+ * COMMAND REGISTRATION
+ * ----------------------------------------------------------
+ */
+program
+  .usage('<template-name>')
+  .on('--help', function () {
+    console.log()
+    console.log('  Examples:')
+    console.log()
+    console.log(chalk.gray('    # Scaffold boilerplate files based on SCSS syntax'))
+    console.log('    $ bemoid scaffold scss')
+    console.log()
+  })
 
-program.on('--help', function () {
-  console.log()
-  console.log('  Examples:')
-  console.log()
-  console.log(chalk.gray('    # Scaffold boilerplate files based on SCSS syntax'))
-  console.log('    $ bemoid scaffold scss')
-  console.log()
-})
 
+/**
+ * COMMAND HELP
+ * ----------------------------------------------------------
+ * Outputs help text when command arguments are not provided.
+ */
 function help () {
   program.parse(process.argv)
+
   if (program.args.length < 1) return program.help()
 }
 help()
 
-var template = program.args[0]
-var rawName = program.args[1]
-var to = path.resolve(rawName || '.')
-var tmp = path.join(home, '.bemoid-templates', template.replace(/\//g, '-'))
 
-run()
+/**
+ * COMMAND LOGIC
+ * ----------------------------------------------------------
+ * Generates and renders boilerplate from specified template.
+ */
+var template = program.args[0]
+var to = path.resolve(program.args[1] || '.')
+var tmp = store.templatePath(template)
 
 function run() {
+  var spinner = ora('Scaffolding a template')
+
+  spinner.start()
+
   generate({
     template: `bemoid/scaffold-${template}`,
     from: tmp,
     to: to
   }, function (err) {
+    spinner.stop()
+
     if (err) throw err.message;
+
+    console.log(chalk.green(`Template [${template}] sucessfully scaffolded`))
   })
+}
+
+if (exists(to)) {
+  var questions = [{
+    type: 'confirm',
+    name: 'ok',
+    message: 'Target directory exists and will be overwritten. Continue?'
+  }]
+
+  inquirer
+    .prompt(questions)
+    .then(function (answers) {
+      if (answers.ok) {
+        run()
+      }
+    })
+} else {
+  run()
 }
