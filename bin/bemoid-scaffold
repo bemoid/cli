@@ -72,7 +72,7 @@ function downloadAndGenerateBoilerplate(name) {
     spinner.stop()
 
     if (err) {
-      console.log(chalk.red(`× Failed to download [${name}] boilerplate: ${err.message.trim()}`))
+      console.log(chalk.red(`✘ Failed to download [${name}] boilerplate: ${err.message.trim()}`))
       process.exit(1)
     }
 
@@ -94,13 +94,13 @@ function runScaffolding() {
       }
     } else {
       console.log()
-      console.log(chalk.gray(`> You are offline. Working using cached boilerplate [${store}] files ...`))
+      console.log(chalk.gray(`♫ Woops, you are offline. Working using cached boilerplate [${store}] files ...`))
 
       if (exists(store)) {
         generateBoilerplate()
       } else {
         spinner.stop()
-        console.log(chalk.yellow(`> There is no cached files of choosen [${boilerplate}] boilerplate.`))
+        console.log(chalk.yellow(`⚠ There is no cached files of choosen [${boilerplate}] boilerplate.`))
       }
     }
   })
