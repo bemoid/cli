@@ -6,14 +6,14 @@ var chalk = require('chalk')
 var rm = require('rimraf').sync
 var inquirer = require('inquirer')
 var program = require('commander')
-var online = require('is-online')
 var exists = require('fs').existsSync
 var exec = require('child_process').exec
 
+var version = require('../package').dependencies['@bemoid/bemoid']
 var store = require('../lib/store')
 var logger = require('../lib/logger')
-var generate = require('../lib/generate')
-var download = require('../lib/download')
+var generator = require('../lib/generator')
+var downloader = require('../lib/downloader')
 
 /**
  * COMMAND REGISTRATION
@@ -50,75 +50,63 @@ help()
  * ----------------------------------------------------------
  * Installs package and renders files from specified boilerplate.
  */
+var spinner = ora('Working ...')
 var boilerplate = program.args[0]
 var to = path.resolve(program.args[1] || '.')
 var temp = store.templatePath(boilerplate)
-var installSpinner = ora('Installing a package ...')
-var generateSpinner = ora('Scaffolding the boilerplate ...')
 
-function generateBoilerplate() {
-  generate({
-    boilerplate: temp,
-    to: to
-  }, (err) => {
-    if (err) throw err.message
+function generate() {
+  generator({ boilerplate: temp, to: to }, (err) => {
+    spinner.stop()
 
-    generateSpinner.stop()
+    if (err) {
+      logger.error(`Failed to generate a [${name}] boilerplate.\n${chalk.red(err.message.trim())}`)
+    }
+
     logger.success(`Boilerplate [${boilerplate}] sucessfully scaffolded.`)
   })
 }
 
-function downloadAndGenerateBoilerplate(name) {
-  download({
-    from: name,
-    to: temp
-  }, (err) => {
-    generateSpinner.stop()
+function download(name) {
+  downloader({ from: name, to: temp }, (err) => {
+    spinner.stop()
 
     if (err) {
-      logger.error(`Failed to download [${name}] boilerplate: ${err.message.trim()}`)
+      logger.error(`Failed to download a [${name}] boilerplate.\n${chalk.red(err.message.trim())}`)
     }
 
-    generateBoilerplate()
+    generate()
   })
 }
 
-function runScaffolding() {
-  generateSpinner.start()
+function scaffold() {
+  spinner.start('Scaffolding the boilerplate ...')
 
   let isExternal = (boilerplate.indexOf('/') > -1)
 
   if (isExternal) {
-    return downloadAndGenerateBoilerplate(boilerplate)
+    return download(boilerplate)
   }
 
-  return downloadAndGenerateBoilerplate(`bemoid/scaffold-${boilerplate}`)
+  return download(`bemoid/scaffold-${boilerplate}`)
 }
 
 function run() {
-  installSpinner.start()
+  spinner.start('Installing a package ...')
 
-  online().then((online) => {
-    if (online) {
-      if (! exists(path.resolve('./package.json'))) {
-        logger.comment()
-        logger.error('Could not find a `package.json`. Please run `scaffold` command where this file is located.')
-      }
+  if (! exists(path.resolve('./package.json'))) {
+    logger.comment()
+    logger.error('Could not find a `package.json`. Please run `scaffold` command where this file is located.')
+  }
 
-      exec(`npm install @bemoid/bemoid@file:../bemoid`, function (err) {
-        installSpinner.stop()
+  exec(`npm install @bemoid/bemoid@file:../bemoid`, function (err) {
+    spinner.stop()
 
-        if (err) {
-          logger.error(`Could not install a package.\n${chalk.red(err.message.trim())}`)
-        }
-
-        runScaffolding()
-      })
-    } else {
-      installSpinner.stop()
-
-      logger.warning(`Woops, you are offline. Please connect to the internet in order to proccess scaffolding.`)
+    if (err) {
+      logger.error(`Could not install a package.\n${chalk.red(err.message.trim())}`)
     }
+
+    scaffold()
   })
 }
 
