@@ -8,17 +8,20 @@ var inquirer = require('inquirer')
 var program = require('commander')
 var online = require('is-online')
 var exists = require('fs').existsSync
+var exec = require('child_process').exec
 
 var store = require('../lib/store')
+var logger = require('../lib/logger')
 var generate = require('../lib/generate')
 var download = require('../lib/download')
 
 /**
  * COMMAND REGISTRATION
  * ----------------------------------------------------------
+ * Register command allong with options.
  */
 program
-  .usage('<boilerplate-name>')
+  .usage('<boilerplate>')
   .on('--help', () => {
     console.log()
     console.log('  Examples:')
@@ -45,12 +48,13 @@ help()
 /**
  * COMMAND LOGIC
  * ----------------------------------------------------------
- * Generates and renders boilerplate from specified boilerplate.
+ * Installs package and renders files from specified boilerplate.
  */
 var boilerplate = program.args[0]
 var to = path.resolve(program.args[1] || '.')
 var temp = store.templatePath(boilerplate)
-var spinner = ora('Scaffolding the boilerplate ...')
+var installSpinner = ora('Installing a package ...')
+var generateSpinner = ora('Scaffolding the boilerplate ...')
 
 function generateBoilerplate() {
   generate({
@@ -59,8 +63,8 @@ function generateBoilerplate() {
   }, (err) => {
     if (err) throw err.message
 
-    spinner.stop()
-    console.log(chalk.green(`✓ Boilerplate [${boilerplate}] sucessfully scaffolded.`))
+    generateSpinner.stop()
+    logger.success(`Boilerplate [${boilerplate}] sucessfully scaffolded.`)
   })
 }
 
@@ -69,11 +73,10 @@ function downloadAndGenerateBoilerplate(name) {
     from: name,
     to: temp
   }, (err) => {
-    spinner.stop()
+    generateSpinner.stop()
 
     if (err) {
-      console.log(chalk.red(`✘ Failed to download [${name}] boilerplate: ${err.message.trim()}`))
-      process.exit(1)
+      logger.error(`Failed to download [${name}] boilerplate: ${err.message.trim()}`)
     }
 
     generateBoilerplate()
@@ -81,27 +84,40 @@ function downloadAndGenerateBoilerplate(name) {
 }
 
 function runScaffolding() {
-  spinner.start()
+  generateSpinner.start()
+
+  let isExternal = (boilerplate.indexOf('/') > -1)
+
+  if (isExternal) {
+    return downloadAndGenerateBoilerplate(boilerplate)
+  }
+
+  return downloadAndGenerateBoilerplate(`bemoid/scaffold-${boilerplate}`)
+}
+
+function run() {
+  installSpinner.start()
 
   online().then((online) => {
     if (online) {
-      let isExternal = (boilerplate.indexOf('/') > -1)
-
-      if (isExternal) {
-        downloadAndGenerateBoilerplate(boilerplate)
-      } else {
-        downloadAndGenerateBoilerplate(`bemoid/scaffold-${boilerplate}`)
+      if (! exists(path.resolve('./package.json'))) {
+        logger.comment()
+        logger.error('Could not find a `package.json`. Please run `scaffold` command where this file is located.')
       }
+
+      exec(`npm install @bemoid/bemoid@file:../bemoid`, function (err) {
+        installSpinner.stop()
+
+        if (err) {
+          logger.error(`Could not install a package.\n${chalk.red(err.message.trim())}`)
+        }
+
+        runScaffolding()
+      })
     } else {
-      console.log()
-      console.log(chalk.gray(`♫ Woops, you are offline. Working using cached boilerplate [${temp}] files ...`))
+      installSpinner.stop()
 
-      if (exists(temp)) {
-        generateBoilerplate()
-      } else {
-        spinner.stop()
-        console.log(chalk.yellow(`⚠ There is no cached files for [${boilerplate}] boilerplate.`))
-      }
+      logger.warning(`Woops, you are offline. Please connect to the internet in order to proccess scaffolding.`)
     }
   })
 }
@@ -110,16 +126,16 @@ if (exists(to)) {
   var questions = [{
     type: 'confirm',
     name: 'ok',
-    message: `Target directory [${to}] exists and will be overwritten. Continue?`
+    message: `Target directory exists and will be overwritten. Want to continue?`
   }]
 
   inquirer
     .prompt(questions)
     .then((answers) => {
       if (answers.ok) {
-        runScaffolding()
+        run()
       }
     })
 } else {
-  runScaffolding()
+  run()
 }
