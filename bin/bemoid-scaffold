@@ -3,15 +3,14 @@
 var ora = require('ora')
 var path = require('path')
 var chalk = require('chalk')
-var rm = require('rimraf').sync
 var inquirer = require('inquirer')
 var program = require('commander')
 var exists = require('fs').existsSync
 var exec = require('child_process').exec
 
-var version = require('../package').dependencies['@bemoid/bemoid']
 var store = require('../lib/store')
 var logger = require('../lib/logger')
+var config = require('../package').config
 var generator = require('../lib/generator')
 var downloader = require('../lib/downloader')
 
@@ -99,7 +98,7 @@ function run() {
     logger.error('Could not find a `package.json`. Please run `scaffold` command where this file is located.')
   }
 
-  exec(`npm install @bemoid/bemoid@file:../bemoid`, function (err) {
+  exec(`npm install ${config.bemoid.package} --save`, function (err) {
     spinner.stop()
 
     if (err) {
