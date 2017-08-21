@@ -14,11 +14,15 @@ var config = require('../package').config
 var generator = require('../lib/generator')
 var downloader = require('../lib/downloader')
 
-/**
- * COMMAND REGISTRATION
- * ----------------------------------------------------------
- * Register command allong with options.
- */
+/*
+|-----------------------------------------------------------
+| Command Registration
+|-----------------------------------------------------------
+|
+| Register command along with options.
+|
+*/
+
 program
   .usage('<boilerplate>')
   .on('--help', () => {
@@ -31,11 +35,15 @@ program
   })
 
 
-/**
- * COMMAND HELP
- * ----------------------------------------------------------
- * Outputs help text when command arguments are not provided.
- */
+/*
+|-----------------------------------------------------------
+| Command Help
+|-----------------------------------------------------------
+|
+| Output help text when command arguments are not provided.
+|
+*/
+
 function help () {
   program.parse(process.argv)
 
@@ -44,16 +52,25 @@ function help () {
 help()
 
 
-/**
- * COMMAND LOGIC
- * ----------------------------------------------------------
- * Installs package and renders files from specified boilerplate.
- */
+/*
+|-----------------------------------------------------------
+| Command Logic
+|-----------------------------------------------------------
+|
+| Install package and renders files from specified boilerplate.
+|
+*/
+
 var spinner = ora('Working ...')
 var boilerplate = program.args[0]
 var to = path.resolve(program.args[1] || '.')
 var temp = store.templatePath(boilerplate)
 
+/**
+ * Generates boilerplate in specifed destination path.
+ *
+ * @return {Void}
+ */
 function generate() {
   generator({ boilerplate: temp, to: to }, (err) => {
     spinner.stop()
@@ -66,6 +83,12 @@ function generate() {
   })
 }
 
+/**
+ * Donwloads boilerplate from Github.
+ *
+ * @param  {String} name
+ * @return {Void}
+ */
 function download(name) {
   downloader({ from: name, to: temp }, (err) => {
     spinner.stop()
@@ -78,18 +101,31 @@ function download(name) {
   })
 }
 
+/**
+ * Determines source of a boilerplate and
+ * downloads its files to temp folder.
+ *
+ * @return {Void} [description]
+ */
 function scaffold() {
   spinner.start('Scaffolding the boilerplate ...')
 
   let isExternal = (boilerplate.indexOf('/') > -1)
 
   if (isExternal) {
-    return download(boilerplate)
+    download(boilerplate)
+
+    return;
   }
 
-  return download(`bemoid/scaffold-${boilerplate}`)
+  download(`bemoid/scaffold-${boilerplate}`)
 }
 
+/**
+ * Runs scaffolding logic.
+ *
+ * @return {Void}
+ */
 function run() {
   spinner.start('Installing a package ...')
 

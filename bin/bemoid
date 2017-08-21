@@ -2,6 +2,15 @@
 
 const program = require('commander')
 
+/*
+|-----------------------------------------------------------
+| Command Registration
+|-----------------------------------------------------------
+|
+| Register command along with options.
+|
+*/
+
 program
   .version(require('../package').version)
   .usage('<command> [options]')
