@@ -18,6 +18,7 @@
     "chalk": "^1.1.1",
     "child_process": "^1.0.2",
     "commander": "^2.9.0",
+    "consolidate": "^0.14.5",
     "download-git-repo": "^0.2.1",
     "handlebars": "^4.0.0",
     "inquirer": "^3.2.1",
