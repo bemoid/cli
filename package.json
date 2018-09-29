@@ -4,7 +4,7 @@
   "description": "Simple CLI for scaffolding front-end based on Bemoid framework.",
   "bin": {
     "bemoid": "bin/bemoid",
-    "bemoid-init": "bin/bemoid-init"
+    "bemoid-scaffold": "bin/bemoid-scaffold"
   },
   "scripts": {},
   "keywords": [
