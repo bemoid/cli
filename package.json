@@ -1,7 +1,7 @@
 {
   "name": "@bemoid/cli",
-  "version": "1.0.0",
-  "description": "Simple CLI for scaffolding front-end based on Bemoid CSS framework.",
+  "version": "0.1.0",
+  "description": "Simple CLI for scaffolding front-end based on Bemoid framework.",
   "bin": {
     "bemoid": "bin/bemoid",
     "bemoid-init": "bin/bemoid-init"
