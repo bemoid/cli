@@ -11,7 +11,7 @@
     "bemoid",
     "cli"
   ],
-  "author": "Jędrzej Chałubek",
+  "author": "Jędrzej Chałubek <jedrzej.chalubek@gmail.com> (https://jedrzejchalubek.com)",
   "license": "MIT",
   "dependencies": {
     "async": "^0.2.10",
