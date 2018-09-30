@@ -6,7 +6,9 @@
     "bemoid": "bin/bemoid",
     "bemoid-scaffold": "bin/bemoid-scaffold"
   },
-  "scripts": {},
+  "scripts": {
+    "uninstall": "lib/clean.js"
+  },
   "keywords": [
     "bemoid",
     "cli"
@@ -24,6 +26,7 @@
     "inquirer": "^3.3.0",
     "metalsmith": "^1.0.0",
     "ora": "^1.4.0",
+    "rimraf": "^2.6.2",
     "user-home": "^2.0.0"
   },
   "bemoid": {

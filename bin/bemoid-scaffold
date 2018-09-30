@@ -75,7 +75,7 @@ var temp = store.templatePath(boilerplate)
  *
  * @return {Void}
  */
-function generate() {
+function generate(name) {
   generator({ boilerplate: temp, to: to }, (err) => {
     spinner.stop()
 
@@ -101,7 +101,7 @@ function download(name) {
       logger.error(`Failed to download a [${name}] boilerplate.\n${chalk.red(err.message.trim())}`)
     }
 
-    generate()
+    generate(name)
   })
 }
 
