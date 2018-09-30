@@ -14,5 +14,6 @@ const program = require('commander')
 program
   .version(require('../package').version)
   .usage('<command> [options]')
+  .command('clean', 'Clean cache folder stored in user home directory')
   .command('scaffold', 'Scaffold boilerplate from a template')
   .parse(process.argv)
