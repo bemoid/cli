@@ -26,9 +26,10 @@
     "ora": "^1.4.0",
     "user-home": "^2.0.0"
   },
-  "config": {
-    "bemoid": {
-      "package": "@bemoid/bemoid"
+  "bemoid": {
+    "package": {
+      "dir": "@bemoid/bemoid",
+      "name": "git+https://git@github.com/bemoid/bemoid.git"
     }
   }
 }
