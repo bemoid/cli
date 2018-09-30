@@ -7,7 +7,6 @@ const rimraf = require('rimraf')
 const home = require('user-home')
 const program = require('commander')
 const exists = require('fs').existsSync
-
 const logger = require('../lib/logger')
 
 /*
@@ -34,25 +33,44 @@ program
 | Command Logic
 |-----------------------------------------------------------
 |
-| Install package and renders files from specified boilerplate.
+| Removes CLI's cache files stored in user home directory.
 |
 */
 
-const DIR = '.bemoid'
+const spinner = ora('Working ...')
+const dir = path.join(home, '.bemoid')
 
-var dir = path.join(home, DIR)
-var spinner = ora('Working ...')
+/**
+ * Deletes `.bemoid` directory.
+ *
+ * @return {Void}
+ */
+function run () {
+  spinner.start(`Removing configuration [${dir}] directory ...`)
 
-if (exists(dir)) {
-  spinner.start(`Removing configuration [${DIR}] directory ...`)
-
-  rimraf(path.join(home, DIR), function (err) {
+  rimraf(dir, function (err) {
     if (err) throw err
 
     spinner.stop()
 
     logger.success(`Bemoid CLI configuration files sucessfully removed.`)
   })
+}
+
+if (exists(dir)) {
+  var questions = [{
+    type: 'confirm',
+    name: 'ok',
+    message: `Target directory exists and will be overwritten. Want to continue?`
+  }]
+
+  inquirer
+    .prompt(questions)
+    .then((answers) => {
+      if (answers.ok) {
+        run()
+      }
+    })
 } else {
-  logger.comment(`It's clean! Couldn't find the [${DIR}] directory.`)
+  logger.comment(`Its clean! Nothing to remove.`)
 }

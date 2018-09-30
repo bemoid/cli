@@ -51,6 +51,18 @@ function help () {
 }
 help()
 
+/*
+|-----------------------------------------------------------
+| Command Validation
+|-----------------------------------------------------------
+|
+| Validate input provided by user to the command.
+|
+*/
+
+if (!program.args[1]) {
+  logger.error(`${chalk.red('Please specify a target directory.')}`)
+}
 
 /*
 |-----------------------------------------------------------
@@ -61,14 +73,10 @@ help()
 |
 */
 
-if (!program.args[1]) {
-  logger.error(`${chalk.red('Please specify a target directory.')}`)
-}
-
-var spinner = ora('Working ...')
-var boilerplate = program.args[0]
-var to = path.resolve(program.args[1])
-var temp = store.templatePath(boilerplate)
+const spinner = ora('Working ...')
+const boilerplate = program.args[0]
+const to = path.resolve(program.args[1])
+const temp = store.templatePath(boilerplate)
 
 /**
  * Generates boilerplate in specifed destination path.
@@ -91,6 +99,7 @@ function generate(name) {
  * Donwloads boilerplate from Github.
  *
  * @param  {String} name
+ *
  * @return {Void}
  */
 function download(name) {
@@ -106,10 +115,9 @@ function download(name) {
 }
 
 /**
- * Determines source of a boilerplate and
- * downloads its files to temp folder.
+ * Determines source of a boilerplate and downloads its files to temp folder.
  *
- * @return {Void} [description]
+ * @return {Void}
  */
 function scaffold() {
   spinner.start('Scaffolding the boilerplate ...')
@@ -125,7 +133,7 @@ function scaffold() {
 function run() {
   spinner.start('Installing a package ...')
 
-  if (! exists(path.resolve('./package.json'))) {
+  if (!exists(path.resolve('./package.json'))) {
     logger.comment()
     logger.error('Could not find a `package.json`. Please run `scaffold` command where this file is located.')
   }
