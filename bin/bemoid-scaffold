@@ -122,7 +122,11 @@ function download(name) {
 function scaffold() {
   spinner.start('Scaffolding the boilerplate ...')
 
-  download(boilerplate)
+  if (exists(temp)) {
+    generate(boilerplate)
+  } else {
+    download(boilerplate)
+  }
 }
 
 /**
