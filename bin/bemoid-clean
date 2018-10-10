@@ -62,7 +62,7 @@ if (exists(dir)) {
   var questions = [{
     type: 'confirm',
     name: 'ok',
-    message: `Target directory exists and will be overwritten. Want to continue?`
+    message: `Configuration directory will be removed. Want to continue?`
   }]
 
   inquirer
